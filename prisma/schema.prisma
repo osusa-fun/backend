@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Token {
+  id             String      @id @default(cuid())
+  mint           String      @unique
+  name           String
+  symbol         String
+  description    String?
+  imageUrl       String?
+  creatorWallet  String
+  bagsConfigKey  String
+  createdAt      DateTime    @default(now())
+  recipients     Recipient[]
+}
+
+model Recipient {
+  id             String   @id @default(cuid())
+  tokenMint      String
+  token          Token    @relation(fields: [tokenMint], references: [mint])
+  proxyPubkey    String   @unique
+  realPubkey     String   // AES-256-GCM encrypted
+  bps            Int      // basis points, sum across all recipients must equal 10000
+  secretKey      String   // AES-256-GCM encrypted base58 keypair secret
+  totalClaimed   BigInt   @default(0)
+  createdAt      DateTime @default(now())
+}
